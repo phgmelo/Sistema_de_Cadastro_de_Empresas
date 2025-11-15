@@ -42,8 +42,8 @@ class EmpresaWindow(QDialog):
         self.setLayout(layout)
         self.load_data()
 
-        # Conexões
-        self.btn_refresh.clicked.connect(lambda: self.load_data(self.search_input.text()))
+        # Conexões dos botões
+        self.btn_refresh.clicked.connect(self.refresh_data)
         self.btn_add.clicked.connect(self.add_empresa)
         self.btn_edit.clicked.connect(self.edit_empresa)
         self.btn_delete.clicked.connect(self.delete_empresa)
@@ -64,6 +64,11 @@ class EmpresaWindow(QDialog):
 
     def search_empresa(self):
         self.load_data(self.search_input.text())
+
+    def refresh_data(self):
+        """Limpa o campo de busca e recarrega toda a tabela"""
+        self.search_input.clear()
+        self.load_data()
 
     def get_selected_id(self):
         indexes = self.table.selectionModel().selectedRows()
