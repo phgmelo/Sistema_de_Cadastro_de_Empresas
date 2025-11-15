@@ -1,45 +1,64 @@
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QPushButton, QLineEdit, QLabel, QMessageBox
+    QPushButton, QLineEdit, QLabel, QMessageBox, QFileDialog
 )
 from src.controllers.funcionario_controller import FuncionarioController
 from src.models.funcionario import Funcionario
+import pandas as pd
 
 class FuncionarioWindow(QDialog):
     def __init__(self, empresa_id=None):
         super().__init__()
         self.setWindowTitle("Gerenciar Funcionários")
-        self.setMinimumSize(700, 400)
+        self.setMinimumSize(800, 400)
         self.empresa_id = empresa_id
 
         layout = QVBoxLayout()
 
+        # Campo de busca
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("Buscar por nome:"))
+        self.search_input = QLineEdit()
+        search_layout.addWidget(self.search_input)
+        self.btn_search = QPushButton("Buscar")
+        search_layout.addWidget(self.btn_search)
+        layout.addLayout(search_layout)
+
+        # Tabela
         self.table = QTableWidget()
         layout.addWidget(self.table)
 
+        # Botões
         btn_layout = QHBoxLayout()
         self.btn_add = QPushButton("Adicionar")
         self.btn_edit = QPushButton("Editar")
         self.btn_delete = QPushButton("Excluir")
         self.btn_refresh = QPushButton("Atualizar")
+        self.btn_export = QPushButton("Exportar CSV")
         btn_layout.addWidget(self.btn_add)
         btn_layout.addWidget(self.btn_edit)
         btn_layout.addWidget(self.btn_delete)
         btn_layout.addWidget(self.btn_refresh)
+        btn_layout.addWidget(self.btn_export)
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
         self.load_data()
 
+        # Conexões
         self.btn_refresh.clicked.connect(self.load_data)
         self.btn_add.clicked.connect(self.add_funcionario)
         self.btn_edit.clicked.connect(self.edit_funcionario)
         self.btn_delete.clicked.connect(self.delete_funcionario)
+        self.btn_search.clicked.connect(self.search_funcionario)
+        self.btn_export.clicked.connect(self.export_csv)
 
-    def load_data(self):
+    def load_data(self, search_term=""):
         funcionarios = FuncionarioController.listar()
         if self.empresa_id:
             funcionarios = [f for f in funcionarios if f[4] == self.empresa_id]
+        if search_term:
+            funcionarios = [f for f in funcionarios if search_term.lower() in f[1].lower()]
 
         self.table.setRowCount(len(funcionarios))
         self.table.setColumnCount(5)
@@ -61,10 +80,18 @@ class FuncionarioWindow(QDialog):
     def add_funcionario(self):
         dlg = FuncionarioFormDialog(self.empresa_id)
         if dlg.exec():
+            try:
+                salario = float(dlg.salario.text())
+            except ValueError:
+                QMessageBox.warning(self, "Erro", "Salário inválido!")
+                return
+            if not dlg.nome.text():
+                QMessageBox.warning(self, "Erro", "Nome é obrigatório!")
+                return
             f = Funcionario(
                 nome=dlg.nome.text(),
                 cargo=dlg.cargo.text(),
-                salario=float(dlg.salario.text()),
+                salario=salario,
                 empresa_id=dlg.empresa_id
             )
             FuncionarioController.criar(f)
@@ -84,11 +111,16 @@ class FuncionarioWindow(QDialog):
         dlg.salario.setText(str(f_data[3]))
 
         if dlg.exec():
+            try:
+                salario = float(dlg.salario.text())
+            except ValueError:
+                QMessageBox.warning(self, "Erro", "Salário inválido!")
+                return
             f = Funcionario(
                 id=funcionario_id,
                 nome=dlg.nome.text(),
                 cargo=dlg.cargo.text(),
-                salario=float(dlg.salario.text()),
+                salario=salario,
                 empresa_id=self.empresa_id
             )
             FuncionarioController.atualizar(f)
@@ -99,9 +131,25 @@ class FuncionarioWindow(QDialog):
         if funcionario_id is None:
             QMessageBox.warning(self, "Atenção", "Selecione um funcionário!")
             return
-        FuncionarioController.deletar(funcionario_id)
-        self.load_data()
+        if QMessageBox.question(self, "Confirmar", "Deseja realmente excluir este funcionário?") == QMessageBox.Yes:
+            FuncionarioController.deletar(funcionario_id)
+            self.load_data()
 
+    def search_funcionario(self):
+        term = self.search_input.text()
+        self.load_data(search_term=term)
+
+    def export_csv(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Salvar CSV", "", "CSV Files (*.csv)")
+        if not path:
+            return
+        funcionarios = FuncionarioController.listar()
+        if self.empresa_id:
+            funcionarios = [f for f in funcionarios if f[4] == self.empresa_id]
+        df = pd.DataFrame(funcionarios, columns=["ID", "Nome", "Cargo", "Salário", "Empresa ID"])
+        df.to_csv(path, index=False)
+        QMessageBox.information(self, "Exportar CSV", f"Arquivo exportado para {path} com sucesso!")
+        
 
 class FuncionarioFormDialog(QDialog):
     def __init__(self, empresa_id=None):
