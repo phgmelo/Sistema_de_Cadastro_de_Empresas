@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 from src.controllers.empresa_controller import EmpresaController
 from src.models.empresa import Empresa
 from src.ui.funcionario_window import FuncionarioWindow
+import re
 
 class EmpresaWindow(QDialog):
     def __init__(self):
@@ -60,9 +61,20 @@ class EmpresaWindow(QDialog):
             return int(self.table.item(row, 0).text())
         return None
 
+    def validate_cnpj(self, cnpj):
+        # Remove caracteres não numéricos
+        cnpj = re.sub(r'\D', '', cnpj)
+        return len(cnpj) == 14
+
     def add_empresa(self):
         dlg = EmpresaFormDialog()
         if dlg.exec():
+            if not dlg.nome.text() or not dlg.cnpj.text():
+                QMessageBox.warning(self, "Erro", "Nome e CNPJ são obrigatórios!")
+                return
+            if not self.validate_cnpj(dlg.cnpj.text()):
+                QMessageBox.warning(self, "Erro", "CNPJ inválido! Deve ter 14 dígitos.")
+                return
             empresa = Empresa(nome=dlg.nome.text(), cnpj=dlg.cnpj.text(), endereco=dlg.endereco.text())
             EmpresaController.criar(empresa)
             self.load_data()
@@ -77,6 +89,12 @@ class EmpresaWindow(QDialog):
         empresa_data = next((e for e in empresas if e[0] == empresa_id), None)
         dlg = EmpresaFormDialog(*empresa_data[1:])
         if dlg.exec():
+            if not dlg.nome.text() or not dlg.cnpj.text():
+                QMessageBox.warning(self, "Erro", "Nome e CNPJ são obrigatórios!")
+                return
+            if not self.validate_cnpj(dlg.cnpj.text()):
+                QMessageBox.warning(self, "Erro", "CNPJ inválido! Deve ter 14 dígitos.")
+                return
             empresa = Empresa(id=empresa_id, nome=dlg.nome.text(), cnpj=dlg.cnpj.text(), endereco=dlg.endereco.text())
             EmpresaController.atualizar(empresa)
             self.load_data()
@@ -86,8 +104,9 @@ class EmpresaWindow(QDialog):
         if empresa_id is None:
             QMessageBox.warning(self, "Atenção", "Selecione uma empresa para excluir!")
             return
-        EmpresaController.deletar(empresa_id)
-        self.load_data()
+        if QMessageBox.question(self, "Confirmar", "Deseja realmente excluir esta empresa?") == QMessageBox.Yes:
+            EmpresaController.deletar(empresa_id)
+            self.load_data()
 
     def view_funcionarios(self):
         empresa_id = self.get_selected_id()
