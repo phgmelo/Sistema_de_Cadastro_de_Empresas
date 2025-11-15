@@ -36,8 +36,8 @@ Permite gerenciar empresas e seus respectivos funcionários através de uma inte
 - 🔍 Busca por nome (empresa ou funcionário)
 - 🔒 Validação de CNPJ
 - 🧾 Exportação de funcionários para CSV
-- 🛠️ **Criação automática do banco via script (`setup_db.py`)**
-- ⚙️ **Geração automatizada da estrutura do projeto (`gerar_projeto.py`)**
+- 🛠️ Criação automática do banco via script (`setup_db.py`)
+- ⚙️ Geração automatizada da estrutura do projeto (`gerar_projeto.py`)
 
 ---
 

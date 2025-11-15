@@ -15,13 +15,12 @@ class FuncionarioWindow(QDialog):
 
         layout = QVBoxLayout()
 
-        # Campo de busca
+        # Campo de busca (ATUALIZA ENQUANTO DIGITA)
         search_layout = QHBoxLayout()
         search_layout.addWidget(QLabel("Buscar por nome:"))
         self.search_input = QLineEdit()
+        self.search_input.textChanged.connect(self.search_funcionario)  # <<< AQUI
         search_layout.addWidget(self.search_input)
-        self.btn_search = QPushButton("Buscar")
-        search_layout.addWidget(self.btn_search)
         layout.addLayout(search_layout)
 
         # Tabela
@@ -46,29 +45,38 @@ class FuncionarioWindow(QDialog):
         self.load_data()
 
         # Conexões
-        self.btn_refresh.clicked.connect(self.load_data)
+        self.btn_refresh.clicked.connect(self.refresh_data)   # <<< ATUALIZADO
         self.btn_add.clicked.connect(self.add_funcionario)
         self.btn_edit.clicked.connect(self.edit_funcionario)
         self.btn_delete.clicked.connect(self.delete_funcionario)
-        self.btn_search.clicked.connect(self.search_funcionario)
         self.btn_export.clicked.connect(self.export_csv)
 
     def load_data(self, search_term=""):
         funcionarios = FuncionarioController.listar()
+
+        # Filtra por empresa
         if self.empresa_id:
             funcionarios = [f for f in funcionarios if f[4] == self.empresa_id]
+
+        # Filtra por nome digitado
         if search_term:
             funcionarios = [f for f in funcionarios if search_term.lower() in f[1].lower()]
 
         self.table.setRowCount(len(funcionarios))
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["ID", "Nome", "Cargo", "Salário", "Empresa ID"])
+
         for row_idx, (id, nome, cargo, salario, empresa_id) in enumerate(funcionarios):
             self.table.setItem(row_idx, 0, QTableWidgetItem(str(id)))
             self.table.setItem(row_idx, 1, QTableWidgetItem(nome))
             self.table.setItem(row_idx, 2, QTableWidgetItem(cargo))
             self.table.setItem(row_idx, 3, QTableWidgetItem(str(salario)))
             self.table.setItem(row_idx, 4, QTableWidgetItem(str(empresa_id)))
+
+    def refresh_data(self):
+        """Limpa busca e atualiza lista — igual EmpresaWindow."""
+        self.search_input.clear()
+        self.load_data()
 
     def get_selected_id(self):
         indexes = self.table.selectionModel().selectedRows()
@@ -88,6 +96,7 @@ class FuncionarioWindow(QDialog):
             if not dlg.nome.text():
                 QMessageBox.warning(self, "Erro", "Nome é obrigatório!")
                 return
+
             f = Funcionario(
                 nome=dlg.nome.text(),
                 cargo=dlg.cargo.text(),
@@ -105,6 +114,7 @@ class FuncionarioWindow(QDialog):
 
         funcionarios = FuncionarioController.listar()
         f_data = next((f for f in funcionarios if f[0] == funcionario_id), None)
+
         dlg = FuncionarioFormDialog(self.empresa_id)
         dlg.nome.setText(f_data[1])
         dlg.cargo.setText(f_data[2])
@@ -116,6 +126,7 @@ class FuncionarioWindow(QDialog):
             except ValueError:
                 QMessageBox.warning(self, "Erro", "Salário inválido!")
                 return
+
             f = Funcionario(
                 id=funcionario_id,
                 nome=dlg.nome.text(),
@@ -131,25 +142,29 @@ class FuncionarioWindow(QDialog):
         if funcionario_id is None:
             QMessageBox.warning(self, "Atenção", "Selecione um funcionário!")
             return
+
         if QMessageBox.question(self, "Confirmar", "Deseja realmente excluir este funcionário?") == QMessageBox.Yes:
             FuncionarioController.deletar(funcionario_id)
             self.load_data()
 
     def search_funcionario(self):
-        term = self.search_input.text()
-        self.load_data(search_term=term)
+        self.load_data(self.search_input.text())
 
     def export_csv(self):
         path, _ = QFileDialog.getSaveFileName(self, "Salvar CSV", "", "CSV Files (*.csv)")
         if not path:
             return
+
         funcionarios = FuncionarioController.listar()
+
         if self.empresa_id:
             funcionarios = [f for f in funcionarios if f[4] == self.empresa_id]
+
         df = pd.DataFrame(funcionarios, columns=["ID", "Nome", "Cargo", "Salário", "Empresa ID"])
         df.to_csv(path, index=False)
+
         QMessageBox.information(self, "Exportar CSV", f"Arquivo exportado para {path} com sucesso!")
-        
+
 
 class FuncionarioFormDialog(QDialog):
     def __init__(self, empresa_id=None):
