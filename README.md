@@ -1,6 +1,6 @@
 # 📦 Sistema de Gerenciamento de Empresas e Funcionários
 
-![Python](https://img.shields.io/badge/Python-3.12)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/downloads/release/python-3120/)
 ![PySide6](https://img.shields.io/badge/PySide6-GUI-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow)
@@ -65,7 +65,14 @@ git clone git@github-paulo:phgmelo/Sistema_de_Cadastro_de_Empresas.git
 cd Sistema_de_Cadastro_de_Empresas
 ```
 
-### 🐍 2️⃣ Crie o ambiente virtual
+### 2️⃣ Instale o Python 3.12
+
+```
+Baixe em:
+https://www.python.org/downloads/release/python-3120/
+```
+
+### 🐍 3️⃣ Crie o ambiente virtual
 
 **Windows:**
 
@@ -81,13 +88,13 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 📦 3️⃣ Instale as dependências
+### 📦 4️⃣ Instale as dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 🗄️ 4️⃣ Configuração do Banco PostgreSQL
+### 🗄️ 5️⃣ Configuração do Banco PostgreSQL
 
 Crie o banco:
 
@@ -105,7 +112,7 @@ DB_HOST = "localhost"
 DB_PORT = 5432
 ```
 
-### ▶️ 5️⃣ Executar o Sistema
+### ▶️ 6️⃣ Executar o Sistema
 
 ```bash
 python main.py
