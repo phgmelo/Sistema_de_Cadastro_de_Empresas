@@ -24,3 +24,24 @@ class EmpresaController:
         cur.close()
         conn.close()
         return dados
+
+    @staticmethod
+    def atualizar(empresa: Empresa):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE empresa SET nome=%s, cnpj=%s, endereco=%s WHERE id=%s",
+            (empresa.nome, empresa.cnpj, empresa.endereco, empresa.id)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    @staticmethod
+    def deletar(empresa_id):
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM empresa WHERE id=%s", (empresa_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
