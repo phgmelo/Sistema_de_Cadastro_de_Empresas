@@ -10,7 +10,7 @@ Permite gerenciar empresas e seus respectivos funcionários através de uma inte
 
 ---
 
-## 🔗 **Links Importantes**
+## 🔗 **Links Importantes **
 
 - 🔹 **Repositório do GitHub:**
   https://github.com/phgmelo/Sistema_de_Cadastro_de_Empresas
