@@ -11,9 +11,15 @@ class EmpresaWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Gerenciar Empresas")
-        self.setMinimumSize(700, 400)
+        self.setMinimumSize(700, 450)
 
         layout = QVBoxLayout()
+
+        # Campo de busca
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Buscar por nome da empresa...")
+        self.search_input.textChanged.connect(self.search_empresa)
+        layout.addWidget(self.search_input)
 
         # Tabela
         self.table = QTableWidget()
@@ -37,14 +43,16 @@ class EmpresaWindow(QDialog):
         self.load_data()
 
         # Conexões
-        self.btn_refresh.clicked.connect(self.load_data)
+        self.btn_refresh.clicked.connect(lambda: self.load_data(self.search_input.text()))
         self.btn_add.clicked.connect(self.add_empresa)
         self.btn_edit.clicked.connect(self.edit_empresa)
         self.btn_delete.clicked.connect(self.delete_empresa)
         self.btn_view_func.clicked.connect(self.view_funcionarios)
 
-    def load_data(self):
+    def load_data(self, filtro_nome=""):
         empresas = EmpresaController.listar()
+        if filtro_nome:
+            empresas = [e for e in empresas if filtro_nome.lower() in e[1].lower()]
         self.table.setRowCount(len(empresas))
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["ID", "Nome", "CNPJ", "Endereço"])
@@ -54,6 +62,9 @@ class EmpresaWindow(QDialog):
             self.table.setItem(row_idx, 2, QTableWidgetItem(cnpj))
             self.table.setItem(row_idx, 3, QTableWidgetItem(endereco))
 
+    def search_empresa(self):
+        self.load_data(self.search_input.text())
+
     def get_selected_id(self):
         indexes = self.table.selectionModel().selectedRows()
         if indexes:
@@ -62,7 +73,6 @@ class EmpresaWindow(QDialog):
         return None
 
     def validate_cnpj(self, cnpj):
-        # Remove caracteres não numéricos
         cnpj = re.sub(r'\D', '', cnpj)
         return len(cnpj) == 14
 
@@ -77,7 +87,7 @@ class EmpresaWindow(QDialog):
                 return
             empresa = Empresa(nome=dlg.nome.text(), cnpj=dlg.cnpj.text(), endereco=dlg.endereco.text())
             EmpresaController.criar(empresa)
-            self.load_data()
+            self.load_data(self.search_input.text())
 
     def edit_empresa(self):
         empresa_id = self.get_selected_id()
@@ -97,7 +107,7 @@ class EmpresaWindow(QDialog):
                 return
             empresa = Empresa(id=empresa_id, nome=dlg.nome.text(), cnpj=dlg.cnpj.text(), endereco=dlg.endereco.text())
             EmpresaController.atualizar(empresa)
-            self.load_data()
+            self.load_data(self.search_input.text())
 
     def delete_empresa(self):
         empresa_id = self.get_selected_id()
@@ -106,7 +116,7 @@ class EmpresaWindow(QDialog):
             return
         if QMessageBox.question(self, "Confirmar", "Deseja realmente excluir esta empresa?") == QMessageBox.Yes:
             EmpresaController.deletar(empresa_id)
-            self.load_data()
+            self.load_data(self.search_input.text())
 
     def view_funcionarios(self):
         empresa_id = self.get_selected_id()
