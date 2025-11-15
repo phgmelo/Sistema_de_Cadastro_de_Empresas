@@ -1,6 +1,6 @@
 # 📦 Sistema de Gerenciamento de Empresas e Funcionários
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Python](https://img.shields.io/badge/Python-3.12)
 ![PySide6](https://img.shields.io/badge/PySide6-GUI-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow)
@@ -36,6 +36,8 @@ Permite gerenciar empresas e seus respectivos funcionários através de uma inte
 - 🔍 Busca por nome (empresa ou funcionário)
 - 🔒 Validação de CNPJ
 - 🧾 Exportação de funcionários para CSV
+- 🛠️ **Criação automática do banco via script (`setup_db.py`)**
+- ⚙️ **Geração automatizada da estrutura do projeto (`gerar_projeto.py`)**
 
 ---
 
