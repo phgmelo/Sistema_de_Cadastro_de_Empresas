@@ -1,22 +1,27 @@
 import psycopg2
 from psycopg2 import sql
-from psycopg2.errors import DuplicateDatabase, DuplicateTable
+# from psycopg2.errors import DuplicateDatabase, DuplicateTable # DuplicateDatabase é pego por Exception, DuplicateTable é coberto por IF NOT EXISTS
+from dotenv import dotenv_values
+from pathlib import Path
 
 # ============================================
-# CONFIGURAÇÕES DO BANCO
+# LOAD .ENV SAFELY
 # ============================================
-DB_USER = "postgres"
-DB_PASSWORD = "123senha"
-DB_HOST = "localhost"
-DB_PORT = 5432
-DB_NAME = "sistema_empresas"
+# Assume que o .env está na mesma pasta do setup_db.py (raiz do projeto)
+env_path = Path(__file__).resolve().parent / ".env" 
+config_env = dotenv_values(env_path)
+
+DB_USER = config_env.get("DB_USER")
+DB_PASSWORD = config_env.get("DB_PASSWORD")
+DB_HOST = config_env.get("DB_HOST")
+DB_PORT = int(config_env.get("DB_PORT", 5432)) # Adiciona um default seguro para a porta
+DB_NAME = config_env.get("DB_NAME")
 
 
 # ============================================
-# FUNÇÃO DE CONEXÃO GENÉRICA
+# FUNÇÃO DE CONEXÃO
 # ============================================
 def connect(db_name):
-    """Retorna uma conexão para um banco específico."""
     return psycopg2.connect(
         dbname=db_name,
         user=DB_USER,
@@ -27,17 +32,23 @@ def connect(db_name):
 
 
 # ============================================
-# CRIAÇÃO DO BANCO DE DADOS
+# CRIAÇÃO DO BANCO
 # ============================================
 def create_database():
     try:
         print("🔍 Verificando banco de dados...")
 
-        conn = connect("postgres")
+        # Conecta ao banco 'postgres' (padrão) para poder criar o novo banco de dados
+        conn = psycopg2.connect(
+            dbname="postgres",
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
         conn.autocommit = True
         cur = conn.cursor()
 
-        # Verifica se o BD existe
         cur.execute(
             "SELECT 1 FROM pg_database WHERE datname = %s",
             (DB_NAME,)
@@ -45,22 +56,17 @@ def create_database():
         exists = cur.fetchone()
 
         if exists:
-            print(f"ℹ️ Banco '{DB_NAME}' já existe. Pulando criação.")
+            print(f"ℹ️ Banco '{DB_NAME}' já existe.")
         else:
-            print(f"🛠 Criando banco de dados '{DB_NAME}'...")
-            cur.execute(sql.SQL("CREATE DATABASE {}").format(
-                sql.Identifier(DB_NAME)
-            ))
-            print(f"✅ Banco '{DB_NAME}' criado com sucesso!")
+            print(f"🛠 Criando banco: {DB_NAME}")
+            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(DB_NAME)))
+            print("✅ Banco criado!")
 
         cur.close()
         conn.close()
 
-    except DuplicateDatabase:
-        print(f"⚠️ Banco '{DB_NAME}' já existe (erro ignorado).")
-
     except Exception as e:
-        print("❌ Erro ao criar banco de dados:", e)
+        print(f"❌ Erro ao criar banco: {e}")
 
 
 # ============================================
@@ -68,7 +74,7 @@ def create_database():
 # ============================================
 def create_tables():
     try:
-        print("🔍 Conectando ao banco para criar tabelas...")
+        print("🔍 Conectando ao banco...")
         conn = connect(DB_NAME)
         cur = conn.cursor()
 
@@ -99,15 +105,12 @@ def create_tables():
 
         print("✅ Tabelas criadas com sucesso!")
 
-    except DuplicateTable:
-        print("⚠️ Tabela já existe (erro ignorado).")
-
-    except Exception as e:
-        print("❌ Erro ao criar tabelas:", e)
+    except Exception as e: # Removida a captura específica de DuplicateTable
+        print(f"❌ Erro ao criar tabelas: {e}")
 
 
 # ============================================
-# EXECUÇÃO PRINCIPAL
+# MAIN
 # ============================================
 if __name__ == "__main__":
     print("====================================")
