@@ -19,7 +19,22 @@ class FuncionarioController:
     def listar():
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, nome, cargo, salario, empresa_id FROM funcionario")
+        # Modificar a query para incluir o nome da empresa e ordenar por nome do funcionário
+        cur.execute("""
+            SELECT
+                f.id,
+                f.nome,
+                f.cargo,
+                f.salario,
+                f.empresa_id,
+                e.nome AS empresa_nome
+            FROM
+                funcionario f
+            JOIN
+                empresa e ON f.empresa_id = e.id
+            ORDER BY
+                f.nome ASC;
+        """)
         dados = cur.fetchall()
         cur.close()
         conn.close()
