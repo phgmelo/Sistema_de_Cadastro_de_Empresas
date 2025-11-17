@@ -1,3 +1,5 @@
+# C:\Users\maru_\Sistema_de_Cadastro_de_Empresas\src\controllers\empresa_controller.py
+
 from src.database.connection import get_connection
 from src.models.empresa import Empresa
 
@@ -19,7 +21,7 @@ class EmpresaController:
     def listar():
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, nome, cnpj, endereco FROM empresa")
+        cur.execute("SELECT id, nome, cnpj, endereco FROM empresa ORDER BY id ASC;") # AGORA ORDENADO POR ID DA EMPRESA
         dados = cur.fetchall()
         cur.close()
         conn.close()

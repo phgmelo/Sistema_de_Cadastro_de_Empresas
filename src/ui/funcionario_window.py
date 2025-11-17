@@ -242,7 +242,7 @@ class FuncionarioFormDialog(QDialog):
             self.load_funcionario_data_for_editing()
         elif self.default_empresa_id:
             self.set_default_empresa()
-        self.comboBoxEmpresa.setEnabled(False)
+            self.comboBoxEmpresa.setEnabled(False)
 
 
     def load_empresas_into_combobox(self):

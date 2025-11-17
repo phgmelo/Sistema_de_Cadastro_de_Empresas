@@ -19,7 +19,6 @@ class FuncionarioController:
     def listar():
         conn = get_connection()
         cur = conn.cursor()
-        # Modificar a query para incluir o nome da empresa e ordenar por nome do funcionário
         cur.execute("""
             SELECT
                 f.id,
@@ -33,7 +32,7 @@ class FuncionarioController:
             JOIN
                 empresa e ON f.empresa_id = e.id
             ORDER BY
-                f.nome ASC;
+                f.id ASC; -- AGORA ORDENADO POR ID DO FUNCIONÁRIO, conforme sugestão do avaliador
         """)
         dados = cur.fetchall()
         cur.close()
