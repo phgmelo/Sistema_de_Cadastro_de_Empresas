@@ -10,7 +10,7 @@ Permite gerenciar empresas e seus respectivos funcionários através de uma inte
 
 ---
 
-## 🔗 **Links Importantes **
+## 🔗 **Links Importantes**
 
 - 🔹 **Repositório do GitHub:**
   https://github.com/phgmelo/Sistema_de_Cadastro_de_Empresas
@@ -94,23 +94,35 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 🗄️ 5️⃣ Configuração do Banco PostgreSQL
+### 🗄️ 5️⃣ Configuração do Banco PostgreSQL e Variáveis de Ambiente
 
-Crie o banco:
+Para conectar a aplicação ao banco de dados de forma segura, utilize variáveis de ambiente.
 
-```sql
-CREATE DATABASE sistema_empresas;
+#### a) Crie o arquivo `.env` para credenciais (na raiz do projeto):
+
+Na raiz do seu projeto, crie um arquivo chamado `.env` e adicione as suas credenciais do PostgreSQL, substituindo os valores pelos seus dados reais:
+
+```dotenv
+DB_NAME="sistema_empresas"
+DB_USER="postgres"
+DB_PASSWORD="sua_senha_real_aqui"
+DB_HOST="localhost"
+DB_PORT=5432
 ```
 
-Edite o arquivo (exemplo em `src/database/config.py`):
+Este arquivo `.env` deve ser mantido **local** e **NÃO** deve ser enviado ao repositório Git (ele já está configurado no `.gitignore` para ser ignorado).
 
-```python
-DB_NAME = "sistema_empresas"
-DB_USER = "postgres"
-DB_PASSWORD = "sua_senha_aqui"
-DB_HOST = "localhost"
-DB_PORT = 5432
+#### b) Crie o banco de dados e as tabelas:
+
+O projeto inclui um script (`setup_db.py`) para facilitar a criação do banco de dados e suas tabelas. Execute-o após instalar as dependências e configurar o `.env`:
+
+```bash
+python setup_db.py
 ```
+
+Seu usuário PostgreSQL configurado no arquivo `.env` precisa ter permissões para criar bancos de dados e tabelas.
+
+---
 
 ### ▶️ 6️⃣ Executar o Sistema
 
